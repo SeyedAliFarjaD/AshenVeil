@@ -242,7 +242,7 @@ export class Hollow extends Phaser.Physics.Arcade.Sprite {
     audio.play('enemyDie');
     this.scene.grantEmbers(this.embers, this.x, this.y - 16);
     this.scene.time.delayedCall(700, () => {
-      if (!this.dead) return; // revived by a bonfire rest before the fade began
+      if (!this.dead || !this.scene) return; // destroyed (swarm cleared) or revived by a bonfire rest before the fade began
       this.scene.fx.burst('embers', this.x, this.y - 8, 24);
       this.scene.tweens.add({ targets: this, alpha: 0, duration: 400, onComplete: () => { if (this.dead) { this.setVisible(false); this.body.enable = false; } } });
     });
@@ -542,7 +542,7 @@ export class Sentinel extends Phaser.Physics.Arcade.Sprite {
       audio.play('enemyDie');
       this.scene.grantEmbers(this.embers, this.x, this.y - 16);
       this.scene.time.delayedCall(700, () => {
-        if (!this.dead) return; // revived by a bonfire rest before the fade began
+        if (!this.dead || !this.scene) return; // destroyed (swarm cleared) or revived by a bonfire rest before the fade began
         this.scene.fx.burst('embers', this.x, this.y - 8, 24);
         this.scene.tweens.add({ targets: this, alpha: 0, duration: 400, onComplete: () => { if (this.dead) { this.setVisible(false); this.body.enable = false; } } });
       });
@@ -686,7 +686,7 @@ export class Acolyte extends Phaser.Physics.Arcade.Sprite {
       this.glowImg.setVisible(false);
       this.scene.grantEmbers(this.embers, this.x, this.y - 16);
       this.scene.time.delayedCall(900, () => {
-        if (!this.dead) return; // revived by a bonfire rest before the fade began
+        if (!this.dead || !this.scene) return; // destroyed (swarm cleared) or revived by a bonfire rest before the fade began
         this.scene.fx.burst('embers', this.x, this.y - 8, 24);
         this.scene.tweens.add({ targets: this, alpha: 0, duration: 400, onComplete: () => { if (this.dead) { this.setVisible(false); this.body.enable = false; } } });
       });
