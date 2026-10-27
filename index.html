@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ashen Vigil</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #07060a; overflow: hidden; }
+    #game { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <div id="loading" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#9a907e;font:16px Georgia,serif;pointer-events:none">Loading...</div>
+  <noscript><p style="color:#cfc4ae;font:16px Georgia,serif;text-align:center">Ashen Vigil needs JavaScript to run.</p></noscript>
+  <script src="vendor/phaser.min.js"></script>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Sprite viewer</title>
+<style>body{background:#2a2633;color:#ddd;font:13px monospace;margin:12px}canvas{image-rendering:pixelated;background:#3d3848;margin:2px 0 10px;display:block}</style>
+</head><body>
+<script src="../vendor/phaser.min.js"></script>
+<script type="module">
+import { PixelCanvas } from '../src/art/pixel.js';
+import { STYLES, renderStrip } from '../src/art/humanoid.js';
+import { buildCharacters, CHAR_SIZES } from '../src/art/characters.js';
+import { buildWorld } from '../src/art/world.js';
+// Run the real builders against a headless Phaser scene, then dump every texture.
+const SCALE = Number(new URLSearchParams(location.search).get('s') || 4);
+const only = new URLSearchParams(location.search).get('only');
+new Phaser.Game({ type: Phaser.CANVAS, width: 1, height: 1, pixelArt: true, scene: { create() {
+  buildCharacters(this); buildWorld(this);
+  for (const key of this.textures.getTextureKeys()) {
+    if (key.startsWith('__') || (only && !key.startsWith(only))) continue;
+    const src = this.textures.get(key).getSourceImage();
+    const d = document.createElement('div'); d.textContent = key + ' ' + src.width + 'x' + src.height;
+    const c = document.createElement('canvas'); c.width = src.width * SCALE; c.height = src.height * SCALE;
+    const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(src, 0, 0, c.width, c.height);
+    document.body.append(d, c);
+  }
+} } });
+</script></body></html>

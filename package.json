@@ -1,0 +1,20 @@
+{
+  "name": "ashen-vigil",
+  "version": "1.0.0",
+  "description": "Ashen Vigil",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "python3 tools/serve.py 8080",
+    "build": "node scripts/build.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}
