@@ -3,7 +3,7 @@ import { audio } from '../audio.js';
 const SERIF = 'Georgia, "Times New Roman", serif';
 
 const EPILOGUE = [
-  'The last pyre gutters out beneath the foundry.',
+  'The last spirit of the wood is laid to rest.',
   'For the first time in an age, the ash stops falling.',
   '',
   'The knight sets down the blade by a cold bonfire',
