@@ -283,7 +283,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.setAnim(b.velocity.y < 0 ? 'jump' : 'fall');
     } else if (Math.abs(b.velocity.x) > 15 && ctl.x) {
       this.setAnim('run');
-    } else if (!((this.anim === 'land' || this.anim === 'deflect') && this.anims.isPlaying)) {
+    } else if (!((this.anim === 'land' || this.anim === 'deflect' || (this.anim === 'attack1' && this.castCd > 0)) && this.anims.isPlaying)) {
       this.setAnim('idle');
     }
 
@@ -417,6 +417,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.body.setAllowGravity(true);
     if (how === 'hit' || how === 'hazard') {
       this.body.setVelocity(this.facing * 40, -300);
+      this.jumpCut = true; // the bounce always gets full height (not cut by a released Jump)
       this.usedDouble = false; this.usedDash = false; // a pogo refreshes the air moves
       if (how === 'hazard') this.invuln = Math.max(this.invuln, 0.25);
       audio.play('land', 0.7);
@@ -480,6 +481,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.usedGrapple = true;
     if (arrived) {
       this.body.setVelocity(this.body.velocity.x * 0.4, -170);
+      this.jumpCut = true;
       audio.play('djump', 0.5);
       this.scene.fx.burst('spirit', this.x, this.y - 8, 10);
     } else {

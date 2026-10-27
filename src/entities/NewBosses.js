@@ -358,7 +358,7 @@ export class StagSpirit extends BossBase {
         s.fx.dustPuff(this.x + this.dir * 10, this.y, 10);
       }
     } else if (this.state === 'stunned') {
-      b.setVelocityX(b.velocity.x * 0.9);
+      b.setVelocityX(b.velocity.x * Math.pow(0.9, dt * 60));
       if (this.t <= 0) {
         if (this.phase === 2 && Math.random() < 0.6) { this.face(Math.sign(s.player.x - this.x)); this.windup('charge', 0.45); }
         else { this.state = 'recover'; this.t = 0.4; this.setA('idle'); }

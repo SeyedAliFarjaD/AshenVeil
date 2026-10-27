@@ -324,7 +324,7 @@ export class Wisp extends Phaser.Physics.Arcade.Sprite {
       }
       case 'stagger':
         this.st -= dt;
-        b.setVelocity(b.velocity.x * 0.92, b.velocity.y * 0.92);
+        { const k = Math.pow(0.92, dt * 60); b.setVelocity(b.velocity.x * k, b.velocity.y * k); }
         if (this.st <= 0) this.state = 'return';
         break;
       default: break;

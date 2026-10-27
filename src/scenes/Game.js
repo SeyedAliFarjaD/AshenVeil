@@ -225,6 +225,23 @@ export class GameScene extends Phaser.Scene {
     this.physics.world.setFPS(hz);
   }
 
+  // Phaser's actualFps is a slow running average, so the first sync can land on the
+  // wrong rate (e.g. 120 on a 144Hz screen). Re-measure each second and adopt a new
+  // rate once two readings in a row agree.
+  watchDisplayRate(delta) {
+    const loop = this.game.loop;
+    if (!loop.raf || loop.raf.isSetTimeOut) return;
+    const R = this.rate || (this.rate = { t: 0, frames: 0, last: 0 });
+    R.t += delta; R.frames++;
+    if (R.t < 1000) return;
+    const measured = R.frames * 1000 / R.t;
+    R.t = 0; R.frames = 0;
+    const RATES = [60, 75, 90, 100, 120, 144, 165, 180, 240];
+    const hz = RATES.reduce((a, b) => (Math.abs(b - measured) < Math.abs(a - measured) ? b : a));
+    if (hz === R.last && hz !== this.physics.world.fps && !this.paused) this.physics.world.setFPS(hz);
+    R.last = hz;
+  }
+
   // Lighting and atmosphere: bloom on bright light (fire, sparks, slashes), a mild
   // color grade, soft contact shadows under every walker, and a drifting
   // foreground mist. Post FX need WebGL; on canvas they are skipped.
@@ -1071,8 +1088,9 @@ export class GameScene extends Phaser.Scene {
       const tx = p.x, ty = p.y - 16;
       const dx = tx - o.x, dy = ty - o.y, d = Math.hypot(dx, dy);
       const pull = Math.min(1, o.t * 1.6);
-      o.vx = o.vx * (1 - pull * 0.12) + (dx / (d || 1)) * 900 * pull * dt;
-      o.vy = o.vy * (1 - pull * 0.12) + (dy / (d || 1)) * 900 * pull * dt;
+      const drag = Math.pow(1 - pull * 0.12, dt * 60); // per-60Hz-frame drag, frame-rate independent
+      o.vx = o.vx * drag + (dx / (d || 1)) * 900 * pull * dt;
+      o.vy = o.vy * drag + (dy / (d || 1)) * 900 * pull * dt;
       o.x += o.vx * dt; o.y += o.vy * dt;
       if (Math.random() < 0.4) this.fx.embers.explode(1, o.x, o.y);
       if ((d < 8 && o.t > 0.25) || o.t > 3) {
@@ -1310,7 +1328,8 @@ export class GameScene extends Phaser.Scene {
     this.updateParallax();
     this.updateAtmosphere();
     this.watchPerformance(delta);
-    if (this.hitStopping) return;
+    this.watchDisplayRate(delta);
+    if (this.hitStopping) { if (!this.paused) this.ctl.latch(); return; }
     if (!this.paused) this.updateTutorial(delta);
     this.ctl.update();
     const ui = this.scene.get('UI');
@@ -1392,6 +1411,9 @@ export class GameScene extends Phaser.Scene {
 
     // camera look-ahead
     const cam = this.cameras.main;
+    // follow lerp of 0.1 per 60Hz frame, scaled so the camera trails the same on any refresh rate
+    const lerp = 1 - Math.pow(0.9, dt * 60);
+    cam.setLerp(lerp, lerp);
     cam.followOffset.x += ((-p.facing * 26) - cam.followOffset.x) * Math.min(1, dt * 2.5);
 
     this.fog.tilePositionY -= dt * 14;

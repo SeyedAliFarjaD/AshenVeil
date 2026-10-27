@@ -12,6 +12,7 @@ export class Controls {
     this.prev = {};
     this.state = {};
     this.pressed = {};
+    this.latched = {};
   }
 
   // (re)read the key bindings from settings; called again after the player rebinds
@@ -47,10 +48,22 @@ export class Controls {
       pause: down('pause') || btn(PAD.START),
     };
     this.mouseAttack = false;
-    for (const k in s) this.pressed[k] = s[k] && !this.prev[k] && !this.swallowing;
+    for (const k in s) {
+      this.pressed[k] = (s[k] && !this.prev[k] && !this.swallowing) || !!this.latched[k];
+      this.latched[k] = false;
+    }
     this.swallowing = false;
     this.prev = s;
     this.state = s;
+  }
+
+  // Hit-stop freezes the game for a few frames: still read the pads/keys, and keep any
+  // fresh press for the next real update so a quick tap (combo, roll, parry) isn't lost.
+  latch() {
+    const swallowing = this.swallowing;
+    this.update();
+    for (const k in this.pressed) if (this.pressed[k]) this.latched[k] = true;
+    this.swallowing = swallowing;
   }
 
   // Ignore presses on the next update: a key that closed a menu (Esc, Q) must not also act in-game.
