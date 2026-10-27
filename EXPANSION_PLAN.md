@@ -1,7 +1,7 @@
 # Ashen Vigil: Expansion Plan
 
 Goal: many more enemies, harder platforming, more levels, more bosses.
-Status: PLAN ONLY. No game code has been changed.
+Status: Phases 0-4 done. Levels 5-8 and all four new bosses are in the game.
 
 ## 1. Prerequisites (gathered and verified)
 

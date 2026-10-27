@@ -101,7 +101,7 @@ class Foe extends Phaser.Physics.Arcade.Sprite {
     this.scene.grantEmbers(this.embers, this.x, this.y - 16);
     this.onKilled();
     this.scene.time.delayedCall(800, () => {
-      if (!this.dead) return;
+      if (!this.dead || !this.scene) return;
       this.scene.fx.burst('embers', this.x, this.y - 8, 24);
       this.scene.tweens.add({ targets: this, alpha: 0, duration: 400, onComplete: () => { if (this.dead) { this.setVisible(false); this.body.enable = false; } } });
     });
@@ -758,7 +758,7 @@ export class Spider extends Phaser.Physics.Arcade.Sprite {
       this.scene.grantEmbers(this.embers, this.x, this.y - 6);
       this.setFlipY(true);
       this.scene.time.delayedCall(500, () => {
-        if (!this.dead) return;
+        if (!this.dead || !this.scene) return;
         this.scene.tweens.add({ targets: this, alpha: 0, duration: 400, onComplete: () => { if (this.dead) { this.setVisible(false); this.body.enable = false; } } });
       });
       return 'hit';
@@ -1112,7 +1112,7 @@ export class Necromancer extends Phaser.Physics.Arcade.Sprite {
       s.grantEmbers(this.embers, this.x, this.y - 16);
       this.minions.forEach((w) => { if (!w.dead) w.takeHit(999, dir); });
       s.time.delayedCall(900, () => {
-        if (!this.dead) return;
+        if (!this.dead || !this.scene) return;
         s.fx.burst('embers', this.x, this.y - 8, 24);
         s.tweens.add({ targets: this, alpha: 0, duration: 400, onComplete: () => { if (this.dead) { this.setVisible(false); this.body.enable = false; } } });
       });
