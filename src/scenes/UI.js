@@ -129,8 +129,24 @@ export class UIScene extends Phaser.Scene {
       return { ...s, img, glow, keyText: key, x, fit: 1, lit: false };
     });
 
-    // cheat indicator: top-right, visible only while one-shot mode is on (Shift+O)
-    this.cheatBox = this.add.container(936, 12).setDepth(2).setVisible(false);
+    // run stats (top-right): play time and deaths
+    hudPlate(this.hudFrame, 842, 10, 100, 50);
+    const glass = this.add.graphics().setDepth(3);
+    glass.fillStyle(0xc9b38a, 1); // hourglass
+    glass.fillTriangle(856, 18, 866, 18, 861, 25); glass.fillTriangle(856, 32, 866, 32, 861, 25);
+    glass.fillRect(855, 17, 12, 1); glass.fillRect(855, 32, 12, 1);
+    glass.fillStyle(0xe8d8c0, 1); // skull
+    glass.fillCircle(861, 44, 5); glass.fillRect(858, 47, 7, 4);
+    glass.fillStyle(0x1a1418, 1);
+    glass.fillRect(858, 42, 3, 3); glass.fillRect(862, 42, 3, 3); glass.fillRect(860, 49, 2, 2);
+    this.timeText = this.add.text(932, 25, '0:00', { fontFamily: SERIF, fontSize: '15px', color: '#f0e2c0' })
+      .setOrigin(1, 0.5).setDepth(3).setShadow(1, 1, '#000', 2);
+    this.deathText = this.add.text(932, 46, '0', { fontFamily: SERIF, fontSize: '15px', color: '#f0e2c0' })
+      .setOrigin(1, 0.5).setDepth(3).setShadow(1, 1, '#000', 2);
+    this.timeShown = -1; this.deathsShown = -1;
+
+    // cheat indicator: top-right under the run stats, visible only while one-shot mode is on (Shift+O)
+    this.cheatBox = this.add.container(936, 66).setDepth(2).setVisible(false);
     const cheatLabel = this.add.text(0, 0, 'ONE-SHOT', { fontFamily: SERIF, fontSize: '14px', color: '#ff7a6a' }).setOrigin(1, 0).setShadow(2, 2, '#000', 3);
     const skull = this.add.graphics();
     skull.fillStyle(0xe8d8c0, 1); // bone
@@ -736,6 +752,19 @@ export class UIScene extends Phaser.Scene {
         img.setTexture(full ? 'icon_flask' : 'icon_flask_empty').setAlpha(full ? 1 : 0.45);
         if (i === p.flasks && before > p.flasks) this.tweens.add({ targets: img, scale: { from: 2.6, to: 1.7 }, duration: 260, ease: 'Back.Out' });
       });
+    }
+
+    // ---------------------------------------------------------------- run stats
+    const secs = g.playSeconds;
+    if (secs !== this.timeShown) {
+      this.timeShown = secs;
+      const h = Math.floor(secs / 3600), m = Math.floor(secs / 60) % 60, sec = String(secs % 60).padStart(2, '0');
+      this.timeText.setText(h ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`);
+    }
+    if (g.deaths !== this.deathsShown) {
+      if (this.deathsShown >= 0) this.tweens.add({ targets: this.deathText, scale: { from: 1.5, to: 1 }, duration: 400, ease: 'Back.Out' });
+      this.deathsShown = g.deaths;
+      this.deathText.setText(String(g.deaths));
     }
 
     // ---------------------------------------------------------------- embers

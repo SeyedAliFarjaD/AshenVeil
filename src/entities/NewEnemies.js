@@ -850,7 +850,7 @@ export class Shade extends Phaser.Physics.Arcade.Sprite {
         if (this.t <= 0) { this.state = 'exposed'; this.t = 1.5; b.setVelocity(0, 0); this.setA('float'); }
         break;
       case 'exposed':
-        b.setVelocityX(b.velocity.x * 0.9); b.setVelocityY(b.velocity.y * 0.9);
+        { const k = Math.pow(0.9, dt * 60); b.setVelocity(b.velocity.x * k, b.velocity.y * k); }
         this.setAlpha(1);
         if (this.t <= 0) { this.state = 'fade'; this.t = 0.5; }
         break;
@@ -859,7 +859,7 @@ export class Shade extends Phaser.Physics.Arcade.Sprite {
         if (this.t <= 0) { this.state = 'drift'; this.cd = 2.2; }
         break;
       case 'stagger':
-        b.setVelocity(b.velocity.x * 0.9, b.velocity.y * 0.9);
+        { const k = Math.pow(0.9, dt * 60); b.setVelocity(b.velocity.x * k, b.velocity.y * k); }
         if (this.t <= 0) { this.state = 'exposed'; this.t = 1.0; this.setA('float'); }
         break;
       default: break;

@@ -58,7 +58,7 @@ export class GameScene extends Phaser.Scene {
     this.oneShot = false; // cheat (Shift+O): every connected blow kills
     const c = this.carry || {};
     this.deaths = c.deaths || 0;
-    this.startTime = this.time.now - (c.time || 0) * 1000;
+    this.playMs = (c.time || 0) * 1000; // play time; stops while paused
     // New Game+ scaling: enemies hit harder, endure more, and are worth more
     // base difficulty: enemies and hazards are 25% tougher and hit 25% harder, and
     // embers drop at 40% (-60%). New Game+ scales on top of this.
@@ -225,6 +225,23 @@ export class GameScene extends Phaser.Scene {
     this.physics.world.setFPS(hz);
   }
 
+  // Phaser's actualFps is a slow running average, so the first sync can land on the
+  // wrong rate (e.g. 120 on a 144Hz screen). Re-measure each second and adopt a new
+  // rate once two readings in a row agree.
+  watchDisplayRate(delta) {
+    const loop = this.game.loop;
+    if (!loop.raf || loop.raf.isSetTimeOut) return;
+    const R = this.rate || (this.rate = { t: 0, frames: 0, last: 0 });
+    R.t += delta; R.frames++;
+    if (R.t < 1000) return;
+    const measured = R.frames * 1000 / R.t;
+    R.t = 0; R.frames = 0;
+    const RATES = [60, 75, 90, 100, 120, 144, 165, 180, 240];
+    const hz = RATES.reduce((a, b) => (Math.abs(b - measured) < Math.abs(a - measured) ? b : a));
+    if (hz === R.last && hz !== this.physics.world.fps && !this.paused) this.physics.world.setFPS(hz);
+    R.last = hz;
+  }
+
   // Lighting and atmosphere: bloom on bright light (fire, sparks, slashes), a mild
   // color grade, soft contact shadows under every walker, and a drifting
   // foreground mist. Post FX need WebGL; on canvas they are skipped.
@@ -279,7 +296,7 @@ export class GameScene extends Phaser.Scene {
     save.write({
       level, embers: p.embers, hasDouble: p.hasDouble, hasWallJump: p.hasWallJump, hasDash: p.hasDash, hasGrapple: p.hasGrapple, hasGlide: p.hasGlide,
       stats: p.stats, shop: p.shop, charms: p.charms, equipped: p.equipped, notches: p.notches, foundSecrets: p.foundSecrets, ng: this.ng,
-      deaths: this.deaths, time: Math.floor((this.time.now - this.startTime) / 1000),
+      deaths: this.deaths, time: this.playSeconds,
       tutorial: this.tut ? [...this.tut.shown] : (this.carry && this.carry.tutorial) || [],
     });
   }
@@ -289,7 +306,7 @@ export class GameScene extends Phaser.Scene {
     return {
       embers: p.embers, hasDouble: p.hasDouble, hasWallJump: p.hasWallJump, hasDash: p.hasDash, hasGrapple: p.hasGrapple, hasGlide: p.hasGlide,
       stats: p.stats, shop: p.shop, charms: [...p.charms], equipped: [...p.equipped], notches: p.notches, foundSecrets: [...p.foundSecrets], ng: this.ng,
-      deaths: this.deaths, time: Math.floor((this.time.now - this.startTime) / 1000),
+      deaths: this.deaths, time: this.playSeconds,
     };
   }
 
@@ -837,6 +854,7 @@ export class GameScene extends Phaser.Scene {
         // "cutting shadow": a white after-image shoved along the hit, plus ring and speed streaks
         this.fx.afterImage(t, 0xffffff);
         this.fx.impact(cx, cy, dir, big);
+        this.hitSquash(t, big);
         // the white cut line: angle follows the swing, mirrored by facing
         const ang = (atk.cut || 0) * dir;
         this.fx.cut(cx, cy, ang, atk.cutLen || (big ? 92 : 64), { thick: big ? 1.4 : 1 });
@@ -859,6 +877,18 @@ export class GameScene extends Phaser.Scene {
       this.fx.shake(atk.heavy ? 0.006 : 0.003, atk.heavy ? 140 : 80);
     }
     this.hitSecrets(rect, hitSet);
+  }
+
+  // a quick squeeze-and-recover on the struck foe so every blow lands with weight.
+  // Only the width shrinks: the physics body scales with the sprite, and a taller or
+  // wider body could dip into the floor or a wall for a frame.
+  hitSquash(t, big) {
+    if (!t.active || !t.visible) return;
+    const base = t.hitBase || (t.hitBase = t.scaleX);
+    const k = (big ? 0.12 : 0.07) * (this.bosses.includes(t) ? 0.5 : 1);
+    this.tweens.killTweensOf(t, 'scaleX');
+    t.scaleX = base * (1 - k);
+    this.tweens.add({ targets: t, scaleX: base, duration: 140, ease: 'Back.Out' });
   }
 
   // ------------------------------------------------------------ secrets (false walls)
@@ -1074,8 +1104,9 @@ export class GameScene extends Phaser.Scene {
       const tx = p.x, ty = p.y - 16;
       const dx = tx - o.x, dy = ty - o.y, d = Math.hypot(dx, dy);
       const pull = Math.min(1, o.t * 1.6);
-      o.vx = o.vx * (1 - pull * 0.12) + (dx / (d || 1)) * 900 * pull * dt;
-      o.vy = o.vy * (1 - pull * 0.12) + (dy / (d || 1)) * 900 * pull * dt;
+      const drag = Math.pow(1 - pull * 0.12, dt * 60); // per-60Hz-frame drag, frame-rate independent
+      o.vx = o.vx * drag + (dx / (d || 1)) * 900 * pull * dt;
+      o.vy = o.vy * drag + (dy / (d || 1)) * 900 * pull * dt;
       o.x += o.vx * dt; o.y += o.vy * dt;
       if (Math.random() < 0.4) this.fx.embers.explode(1, o.x, o.y);
       if ((d < 8 && o.t > 0.25) || o.t > 3) {
@@ -1133,6 +1164,12 @@ export class GameScene extends Phaser.Scene {
     this.acolytes.forEach((h) => h.reset());
     this.bellringers.forEach((h) => h.reset());
     this.wisps.forEach((w) => w.reset());
+    this.clearHitSquash();
+  }
+
+  // resets kill tweens: put back any foe caught mid-squash at its rest width
+  clearHitSquash() {
+    for (const e of [...this.allFoes(), ...this.bosses]) if (e.hitBase !== undefined) e.scaleX = e.hitBase;
   }
 
   // ------------------------------------------------------------ death & respawn
@@ -1171,6 +1208,7 @@ export class GameScene extends Phaser.Scene {
     this.resetEnemies();
     if (!this.bossDefeated) {
       this.bosses.forEach((b) => b.reset());
+      this.clearHitSquash();
       this.floodArena(false);
       this.bossStarted = false;
       this.fogWall.body.enable = false;
@@ -1308,12 +1346,16 @@ export class GameScene extends Phaser.Scene {
     this.tweens.add({ targets: t, y: y - 26, alpha: 0, duration: 650, ease: 'Cubic.out', onComplete: () => t.destroy() });
   }
 
+  get playSeconds() { return Math.floor(this.playMs / 1000); }
+
   update(time, delta) {
     const dt = Math.min(delta / 1000, 1 / 30);
+    if (!this.paused) this.playMs += delta;
     this.updateParallax();
     this.updateAtmosphere();
     this.watchPerformance(delta);
-    if (this.hitStopping) return;
+    this.watchDisplayRate(delta);
+    if (this.hitStopping) { if (!this.paused) this.ctl.latch(); return; }
     if (!this.paused) this.updateTutorial(delta);
     this.ctl.update();
     const ui = this.scene.get('UI');
@@ -1395,6 +1437,9 @@ export class GameScene extends Phaser.Scene {
 
     // camera look-ahead
     const cam = this.cameras.main;
+    // follow lerp of 0.1 per 60Hz frame, scaled so the camera trails the same on any refresh rate
+    const lerp = 1 - Math.pow(0.9, dt * 60);
+    cam.setLerp(lerp, lerp);
     cam.followOffset.x += ((-p.facing * 26) - cam.followOffset.x) * Math.min(1, dt * 2.5);
 
     this.fog.tilePositionY -= dt * 14;

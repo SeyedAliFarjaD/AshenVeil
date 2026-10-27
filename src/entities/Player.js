@@ -170,6 +170,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (Math.random() < 0.06) scene.fx.burst('heal', this.x, this.y - 10, 1);
     }
 
+    if (this.state !== 'normal') this.gliding = false;
+    // gliding banks gently into the drift; everything else stands upright
+    const bank = this.gliding ? ctl.x * 0.12 + Math.sin(scene.time.now / 260) * 0.03 : 0;
+    this.rotation += (bank - this.rotation) * Math.min(1, dt * 10);
+    if (!this.gliding && Math.abs(this.rotation) < 0.01) this.rotation = 0;
+
     switch (this.state) {
       case 'normal': this.updateNormal(dt, ctl, onGround); break;
       case 'attack': this.updateAttack(dt, ctl, onGround); break;
@@ -206,6 +212,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.wallLock -= dt;
       b.setVelocityX(approach(b.velocity.x, this.facing * run, 400 * dt));
     } else {
+      // turning hard on the ground kicks up a little dust
+      if (onGround && ctl.x && Math.sign(b.velocity.x) === -ctl.x && Math.abs(b.velocity.x) > 70 && !this.skidded) {
+        this.skidded = true;
+        this.scene.fx.dustPuff(this.x + Math.sign(b.velocity.x) * 4, this.y, 3);
+      } else if (!ctl.x || Math.sign(b.velocity.x) === ctl.x) this.skidded = false;
       b.setVelocityX(approach(b.velocity.x, ctl.x * run, (onGround ? 1200 * (this.floorGrip ?? 1) : 750) * dt));
       if (ctl.x) { this.facing = ctl.x; this.setFlipX(this.facing < 0); }
     }
@@ -268,22 +279,35 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.jumpCut = true;
     }
 
+    // a touch of hang time at the top of a held jump (adds well under a pixel of height)
+    if (!onGround && !this.inWater && ctl.state.jump && Math.abs(b.velocity.y) < 40) b.setGravityY(-320);
+
     // glide (Ashen Mantle): hold Jump while falling to drift down slowly
+    // (the mantle catches the air over a few frames instead of snapping the fall to a stop)
+    const wasGliding = this.gliding;
     this.gliding = false;
     if (this.hasGlide && !onGround && !this.sliding && ctl.state.jump && b.velocity.y > 60) {
-      b.setVelocityY(60);
+      b.setVelocityY(approach(b.velocity.y, 60, 3000 * dt));
       this.gliding = true;
-      if (Math.random() < 0.2) this.scene.fx.burst('spirit', this.x, this.y - 22, 1);
+      if (!wasGliding) {
+        audio.play('whoosh', 0.35);
+        this.scene.fx.burst('spirit', this.x - this.facing * 4, this.y - 30, 6);
+      }
+      if (Math.random() < 0.25) this.scene.fx.burst('spirit', this.x - this.facing * 7, this.y - 30, 1);
     }
 
     // animation
     if (this.sliding) {
       this.setAnim('wall');
+    } else if (this.gliding) {
+      this.setAnim('glide');
     } else if (!onGround) {
-      this.setAnim(b.velocity.y < 0 ? 'jump' : 'fall');
+      this.setAnim(b.velocity.y < -50 ? 'jump' : b.velocity.y < 70 ? 'apex' : 'fall');
     } else if (Math.abs(b.velocity.x) > 15 && ctl.x) {
       this.setAnim('run');
-    } else if (!((this.anim === 'land' || this.anim === 'deflect') && this.anims.isPlaying)) {
+      // the stride follows the real speed: no foot sliding in water or while speeding up
+      this.anims.timeScale = Phaser.Math.Clamp(Math.abs(b.velocity.x) / RUN, 0.55, 1.3);
+    } else if (!((this.anim === 'land' || this.anim === 'deflect' || (this.anim === 'attack1' && this.castCd > 0)) && this.anims.isPlaying)) {
       this.setAnim('idle');
     }
 
@@ -417,6 +441,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.body.setAllowGravity(true);
     if (how === 'hit' || how === 'hazard') {
       this.body.setVelocity(this.facing * 40, -300);
+      this.jumpCut = true; // the bounce always gets full height (not cut by a released Jump)
       this.usedDouble = false; this.usedDash = false; // a pogo refreshes the air moves
       if (how === 'hazard') this.invuln = Math.max(this.invuln, 0.25);
       audio.play('land', 0.7);
@@ -480,6 +505,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.usedGrapple = true;
     if (arrived) {
       this.body.setVelocity(this.body.velocity.x * 0.4, -170);
+      this.jumpCut = true;
       audio.play('djump', 0.5);
       this.scene.fx.burst('spirit', this.x, this.y - 8, 10);
     } else {
@@ -690,6 +716,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   die() {
     this.state = 'dead';
+    this.gliding = false; this.rotation = 0;
     this.cancelGrapple();
     this.body.setAllowGravity(true);
     this.setAlpha(1);

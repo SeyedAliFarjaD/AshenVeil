@@ -315,12 +315,14 @@ export function drawHumanoid(pc, pose, style, fw, fh) {
     const anchorB = add(S, n, -1.6), anchorF = add(S, n, 1.2);
     const right = [], left = [];
     const steps = 4;
+    const cs = P.capeScale || 1; // a pose can billow the cape out (the glide)
+    const capeLen = style.capeLen * cs;
     for (let i = 1; i <= steps; i++) {
       const t = i / steps;
       const a = P.cape + Math.sin(P.wave + t * 2.6) * 0.18 * t;
-      const c = add(S, dir(a), style.capeLen * t);
+      const c = add(S, dir(a), capeLen * t);
       const pd = [Math.cos(a), -Math.sin(a)];
-      const hw = (1.6 + t * 2.2) * bk;
+      const hw = (1.6 + t * 2.2 * cs) * bk;
       right.push(add(c, pd, hw));
       left.push(add(c, pd, -hw));
     }
@@ -335,7 +337,7 @@ export function drawHumanoid(pc, pose, style, fw, fh) {
     }
     const pts = [anchorF, ...right, ...hem.slice(1, -1), ...left.reverse(), anchorB].map(TT);
     pc.poly(pts, C.cape);
-    const mid = add(S, dir(P.cape + Math.sin(P.wave + 1.5) * 0.1), style.capeLen * 0.85);
+    const mid = add(S, dir(P.cape + Math.sin(P.wave + 1.5) * 0.1), capeLen * 0.85);
     L(add(S, dir(P.cape), 2), mid, C.capeDark, 1);
   }
 

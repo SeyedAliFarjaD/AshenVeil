@@ -1,6 +1,6 @@
 // All character animations, authored as poses (angles in degrees).
 import { PixelCanvas, registerSheet } from './pixel.js';
-import { STYLES, pose, renderStrip } from './humanoid.js';
+import { STYLES, pose, lerpPose, renderStrip } from './humanoid.js';
 
 const TAU = Math.PI * 2;
 const range = (n, f) => Array.from({ length: n }, (_, i) => f(i));
@@ -35,6 +35,8 @@ function heroAnims() {
     ...pose({ y: 0, lean: 4, ff: [3, -2], bf: [-5, -4], ba: [-110, -150], fa: [70, 120], sw: 140, cape: -140 - i * 10 }),
     wave: i * 2,
   }));
+  // apex: the in-between of the rise and the fall, so the arms don't snap overhead
+  const apex = [{ ...lerpPose(jump[1], fall[0], 0.5), wave: 1 }];
   const land = [
     pose({ y: 3.5, lean: 18, ff: [5, 0], bf: [-5, 0], ba: [-30, 10], fa: [40, 90], sw: 110, cape: -40 }),
     pose({ y: 1.5, lean: 10, ff: [4, 0], bf: [-4, 0], ba: [-20, 15], fa: [30, 85], sw: 118, cape: -28 }),
@@ -106,6 +108,16 @@ function heroAnims() {
     ...pose({ y: 0, lean: -4, head: 4, ff: [3, -3], bf: [-5, -5], ba: [-95 - i * 4, -70], fa: [40, 100], sw: 140, cape: -150 - i * 12 }),
     wave: i * 2,
   }));
+  // glide (Ashen Mantle): the back hand holds the mantle up like a sail that ripples
+  // overhead, the sword arm reaches forward for balance, legs trail loose beneath
+  const glide = range(4, (i) => {
+    const t = i / 4, s = Math.sin(TAU * t);
+    return {
+      ...pose({ y: -1 + s * 0.4, lean: 20 + s * 2, head: -12, ff: [2, -3 + s * 0.5], bf: [-6, -2 - s * 0.5],
+        ba: [-112 + s * 5, -122 + s * 6], fa: [62 + s * 3, 48 + s * 3], sw: 62 + s * 4, cape: -118 + s * 7 }),
+      capeScale: 1.45, wave: TAU * t,
+    };
+  });
   // air dash: stretched forward, sword trailing, cape streaming
   const dash = [0, 1].map((i) => ({
     ...pose({ y: -2, lean: 58, head: -20, ff: [6, -7], bf: [-8, -4], fa: [-70, -50], ba: [-90, -70], sw: -95, cape: -95 - i * 6 }),
@@ -140,6 +152,7 @@ function heroAnims() {
   return {
     dash: { poses: dash, fps: 12, repeat: -1 },
     wall: { poses: wall, fps: 8, repeat: -1 },
+    glide: { poses: glide, fps: 8, repeat: -1 },
     parry: { poses: parry, fps: 20, repeat: 0 },
     deflect: { poses: deflect, fps: 24, repeat: 0 },
     plunge: { poses: plunge, fps: 16, repeat: 0 },
@@ -147,6 +160,7 @@ function heroAnims() {
     run: { poses: run, fps: 15, repeat: -1 },
     jump: { poses: jump, fps: 8, repeat: 0 },
     fall: { poses: fall, fps: 8, repeat: -1 },
+    apex: { poses: apex, fps: 1, repeat: 0 },
     land: { poses: land, fps: 16, repeat: 0 },
     attack1: { poses: attack1, fps: 20, repeat: 0 },
     attack2: { poses: attack2, fps: 20, repeat: 0 },
