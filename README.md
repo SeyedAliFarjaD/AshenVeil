@@ -1,11 +1,13 @@
 # Ashen Vigil
 
-A 2D souls-like metroidvania built with Phaser 3. It has four levels, each ending in a boss fight:
+A 2D souls-like metroidvania built with Phaser 3. It has six levels, each ending in a boss fight:
 
 1. **The Ashen Ramparts:** *Ser Caedric, the Ashen Warden*.
 2. **The Drowned Crypt:** *Morwen, the Drowned Saint*.
 3. **The Burning Cathedral:** *the Twin Pyres*, Aldous and Ysolde, fought together.
 4. **The Frozen Belfry:** *Sir Hallowyn, the Rimebound*.
+5. **The Sunken Foundry:** *Gorrak, the Forge Golem*.
+6. **The Hollow Wood:** *Oakhart, the Stag Spirit*.
 
 The combat blends **Hollow Knight** (pogo plunges, focus-powered soul bolts, constant movement)
 with **Nine Sols** (deflect timing, a focus gauge, and the Force super). Rest at bonfires to
@@ -125,7 +127,7 @@ Then open http://localhost:8080. You need Python 3, which serves the files with 
 
 ### New Game+
 
-Beat the Frozen Belfry and the completion screen offers New Game+: the game loops back to
+Beat the last level and the completion screen offers New Game+: the game loops back to
 level 1 with everything you earned. Each cycle raises enemy HP (+35%), damage (+20%) and
 ember drops (+50%), and bosses scale too. The title screen shows your cycle on Continue.
 

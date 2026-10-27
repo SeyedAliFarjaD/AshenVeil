@@ -24,7 +24,7 @@ const chrome = spawn(CHROME, [
   '--use-gl=angle',
   '--use-angle=swiftshader',
   '--disable-features=Translate,MediaRouter',
-  '--no-proxy-server',
+  '--no-proxy-server', ...(process.platform === 'linux' ? ['--no-sandbox'] : []),
   'about:blank',
 ])
 

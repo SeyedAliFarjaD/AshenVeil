@@ -3,9 +3,10 @@ import { buildLevel2 } from './level2.js';
 import { buildLevel3 } from './level3.js';
 import { buildLevel4 } from './level4.js';
 import { buildLevel5 } from './level5.js';
+import { buildLevel6 } from './level6.js';
 
-export const LEVELS = { 1: buildLevel1, 2: buildLevel2, 3: buildLevel3, 4: buildLevel4, 5: buildLevel5 };
-export const LAST_LEVEL = 5;
+export const LEVELS = { 1: buildLevel1, 2: buildLevel2, 3: buildLevel3, 4: buildLevel4, 5: buildLevel5, 6: buildLevel6 };
+export const LAST_LEVEL = 6;
 
 // Progress persists in localStorage between sessions.
 // Three save slots; slot 1 keeps the original key so older saves carry over.
