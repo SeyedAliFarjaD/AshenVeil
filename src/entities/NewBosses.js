@@ -331,7 +331,7 @@ export class StagSpirit extends BossBase {
     this.state = 'howl'; this.t = 1.1;
     this.body.setVelocityX(0);
     this.setA('roar', true);
-    audio.play('roar', 0.7);
+    audio.play('howl', 0.9);
     this.scene.fx.shake(0.006, 800);
   }
 
@@ -449,7 +449,7 @@ export class DuelistQueen extends BossBase {
   beginBlink() {
     this.state = 'blink'; this.t = 0.3; this.invuln = true;
     this.body.setVelocityX(0);
-    audio.play('vanish', 0.7);
+    audio.play('chime', 0.8); audio.play('vanish', 0.4);
     this.scene.fx.burst('spirit', this.x, this.y - 40, 24);
     this.scene.tweens.add({ targets: this, alpha: 0, duration: 200 });
   }

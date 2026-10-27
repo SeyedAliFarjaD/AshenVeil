@@ -184,7 +184,7 @@ export class UIScene extends Phaser.Scene {
     this.pauseLayer = this.pauseMenu.layer;
     const g0 = this.game_;
     const opts = {
-      scene: this, menu: this.pauseMenu,
+      scene: this, menu: this.pauseMenu, inGame: true,
       onQuality: (q) => g0.setQuality(q),
       onRebind: () => g0.ctl.rebind(),
     };

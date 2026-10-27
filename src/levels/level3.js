@@ -56,6 +56,7 @@ export function buildLevel3() {
     spawn: at(5, 25),
     bonfires: [
       { id: 'narthex', ...at(9, 25) },
+      { id: 'choir', ...at(86, 25) },
       { id: 'transept', ...at(116, 25) },
     ],
     hollows: [at(34, 25), at(66, 25), at(38, 41), at(101, 25)],

@@ -181,7 +181,7 @@ export class Archer extends Foe {
     const ang = Math.atan2(ty - oy, tx - ox);
     const sp = s.add.image(ox, oy, 'arrow').setDepth(26).setRotation(ang).setFlipY(false);
     this.arrows.push({ sp, vx: Math.cos(ang) * 320, vy: Math.sin(ang) * 320, t: 0 });
-    audio.play('swing', 0.45);
+    audio.play('bow', 0.8);
   }
 
   updateArrows(dt) {
@@ -705,7 +705,7 @@ export class Spider extends Phaser.Physics.Arcade.Sprite {
         b.setVelocity(0, 0);
         this.anims.pause();
         if (!player.dead && Math.abs(player.x - this.spawn.x) < 38 && player.y > this.spawn.y && player.y - this.spawn.y < 170 && this.cd <= 0) {
-          this.state = 'drop'; this.t = 0.9; audio.play('whoosh', 0.3);
+          this.state = 'drop'; this.t = 0.9; audio.play('skitter', 0.8);
         }
         break;
       case 'drop':
@@ -1046,7 +1046,7 @@ export class Necromancer extends Phaser.Physics.Arcade.Sprite {
           else if (s.isSolidAt(this.x + back * 10, this.y + 6)) b.setVelocityX(back * 50);
           else b.setVelocityX(0);
         } else b.setVelocityX(0);
-        if (this.t <= 0 && aware && !this.warded) { this.state = 'summon'; this.t = 1.1; this.setA('channel', true); this.glintAt(8, -48, 0x7aff9a, 2.2); audio.play('wail', 0.4); }
+        if (this.t <= 0 && aware && !this.warded) { this.state = 'summon'; this.t = 1.1; this.setA('channel', true); this.glintAt(8, -48, 0x7aff9a, 2.2); audio.play('summon', 0.7); }
         if (!aware) this.state = 'idle';
         break;
       }

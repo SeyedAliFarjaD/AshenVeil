@@ -30,6 +30,12 @@ const RELICS = {
   flask: { name: 'RELIC OF THE GLASS', desc: '+1 Attunement: another Ember Flask.', apply: (p) => { p.stats.attun++; p.applyStats(); p.flasks = p.maxFlasks; } },
   might: { name: 'RELIC OF THE THRONE', desc: '+1 Strength and +1 Endurance.', apply: (p) => { p.stats.str++; p.stats.endur++; p.applyStats(); } },
 };
+// enemy toughness, damage and ember multipliers per difficulty setting
+const DIFFICULTY = {
+  story: { hp: 0.8, dmg: 0.55, embers: 0.6 },
+  normal: { hp: 1.25, dmg: 1.25, embers: 0.4 },
+  hard: { hp: 1.5, dmg: 1.5, embers: 0.35 },
+};
 const BOSSES = { warden: Warden, saint: Saint, ...NEW_BOSSES };
 
 // enemy states that carry it forward without looking where it lands
@@ -60,10 +66,12 @@ export class GameScene extends Phaser.Scene {
     this.deaths = c.deaths || 0;
     this.playMs = (c.time || 0) * 1000; // play time; stops while paused
     // New Game+ scaling: enemies hit harder, endure more, and are worth more
-    // base difficulty: enemies and hazards are 25% tougher and hit 25% harder, and
-    // embers drop at 40% (-60%). New Game+ scales on top of this.
-    const HARD = 1.25, EMBERS = 0.4;
-    this.ngMul = { hp: HARD * (1 + 0.35 * this.ng), dmg: HARD * (1 + 0.2 * this.ng), embers: EMBERS * (1 + 0.5 * this.ng) };
+    // difficulty (Settings): Normal is the original tuning (enemies 25% tougher and
+    // harder-hitting, embers at 40%). Later levels drop more embers so stat costs keep
+    // pace with the curve. New Game+ scales on top of this.
+    const D = DIFFICULTY[settings.difficulty] || DIFFICULTY.normal;
+    const curve = 1 + 0.12 * ((this.levelNum || 1) - 1);
+    this.ngMul = { hp: D.hp * (1 + 0.35 * this.ng), dmg: D.dmg * (1 + 0.2 * this.ng), embers: D.embers * curve * (1 + 0.5 * this.ng) };
     this.orbs = [];
     this.soulBolts = [];
     this.reflected = []; // enemy projectiles the hero parried back

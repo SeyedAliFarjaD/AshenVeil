@@ -11,6 +11,28 @@ const SFX = {
   hitHeavy: ['chop'], interact: ['metalLatch'], door: ['doorOpen_1'], creak: ['creak1'], draw: ['drawKnife1'],
 };
 const LAYER = { slice: 0.5, clang: 0.6, shield: 0.5, hitHeavy: 0.6 }; // keep the synth too, sample on top
+
+// area themes for levels 6-8 (synthesized; no audio files)
+const AREA = {
+  // the Hollow Wood: D dorian, breathy flute motif over a soft pad, wind in the leaves
+  wood: { cutoff: 700, lfo: 0.05, drone: [73.4, 110, 146.8], droneType: 'triangle', droneGain: 0.08, noise: 900,
+    phrase: [293.7, 0, 349.2, 392, 0, 440, 0, 392, 349.2, 0, 293.7, 0, 261.6, 0, 293.7, 0], noteType: 'sine', noteGain: 0.045, noteLen: 1.6, attack: 0.12, every: 700 },
+  // the Glass Citadel: E lydian, crystalline chimes high above a thin pad
+  glass: { cutoff: 1400, lfo: 0.09, drone: [82.4, 123.5, 207.7], droneType: 'sine', droneGain: 0.07,
+    scale: [659.3, 740, 830.6, 932.3, 987.8, 1244.5, 1318.5], noteType: 'triangle', noteGain: 0.035, noteLen: 3.5, attack: 0.005, every: 600, bell: 1975.5 },
+  // the Ashen Throne: C minor, a heavy organ drone, tolling bell, embers crackling
+  throne: { cutoff: 600, lfo: 0.04, drone: [65.4, 98, 130.8, 155.6, 196], droneType: 'sawtooth', droneGain: 0.06, noise: 3000,
+    phrase: [261.6, 0, 0, 311.1, 0, 0, 293.7, 0, 0, 233.1, 0, 0, 246.9, 0, 0, 0], noteType: 'square', noteGain: 0.025, noteLen: 2.4, attack: 0.3, every: 900, bell: 130.8 },
+};
+// boss themes for levels 6-8, on the boss ostinato engine
+const BOSS_EXTRA = {
+  boss4: { bpm: 138, arp: true, counter: false, toms: true, bass: [73.4, 73.4, 87.3, 73.4, 98, 87.3, 65.4, 69.3],
+    chords: [[293.7, 349.2, 440], [261.6, 329.6, 392], [233.1, 293.7, 349.2], [220, 277.2, 329.6]] },
+  boss5: { bpm: 168, arp: true, counter: true, bell: 1318.5, bass: [82.4, 98, 123.5, 82.4, 92.5, 123.5, 77.8, 92.5],
+    chords: [[329.6, 415.3, 493.9], [370, 466.2, 554.4], [311.1, 392, 493.9], [293.7, 370, 440]] },
+  boss6: { bpm: 162, arp: true, counter: true, toms: true, bell: 261.6, bass: [65.4, 65.4, 77.8, 65.4, 61.7, 65.4, 51.9, 49],
+    chords: [[261.6, 311.1, 392], [207.7, 261.6, 311.1], [233.1, 293.7, 349.2], [246.9, 293.7, 392]] },
+};
 const MUSIC = { ambient: 'music_dark_place', crypt: 'music_dark_place', cathedral: 'music_cathedral_forest' };
 const AMB = { ambient: 'amb_dungeon', crypt: 'amb_dungeon', cathedral: null };
 class AudioEngine {
@@ -248,6 +270,22 @@ class AudioEngine {
       case 'victory':
         [196, 247, 294, 392, 494, 587].forEach((f, i) => this.tone(t + i * 0.12, 3, { freq: f, gain: 0.07 * vol, verb: 0.9, type: 'triangle' }));
         break;
+      case 'bow': // a bowstring twang and the arrow's hiss
+        this.tone(t, 0.18, { freq: 220, slide: 180, gain: 0.12 * vol, type: 'triangle' });
+        this.noise(t + 0.02, 0.22, { freq: 2600, sweep: 900, q: 3, gain: 0.12 * vol }); break;
+      case 'skitter': // many small legs
+        for (let k = 0; k < 6; k++) this.noise(t + k * 0.035, 0.03, { freq: r(3000, 4500), q: 4, gain: 0.08 * vol });
+        break;
+      case 'howl': // a spectral stag's call: a rising, then falling, breathy wail
+        this.tone(t, 1.4, { freq: 280, slide: 520, gain: 0.1 * vol, type: 'sawtooth', attack: 0.15, verb: 1 });
+        this.tone(t + 0.6, 1.2, { freq: 520, slide: 260, gain: 0.08 * vol, type: 'triangle', verb: 1 });
+        this.noise(t, 1.4, { freq: 900, q: 1, gain: 0.12 * vol, attack: 0.3, verb: 0.8 }); break;
+      case 'chime': // glass: a bright, ringing interval
+        this.tone(t, 1.2, { freq: 1318.5, gain: 0.06 * vol, type: 'triangle', verb: 1 });
+        this.tone(t + 0.07, 1.2, { freq: 1975.5, gain: 0.045 * vol, type: 'sine', verb: 1 }); break;
+      case 'summon': // the dead answering: a low swell and a hollow knock
+        this.tone(t, 1.0, { freq: 70, slide: 110, gain: 0.25 * vol, type: 'sawtooth', attack: 0.3, verb: 0.8 });
+        this.noise(t + 0.5, 0.3, { freq: 200, q: 0.8, gain: 0.3 * vol, type: 'lowpass' }); break;
       case 'select': this.tone(t, 0.15, { freq: 880, gain: 0.08 * vol, type: 'triangle', verb: 0.3 }); break;
       case 'wisp': this.tone(t, 0.5, { freq: 700, slide: 300, gain: 0.07 * vol, type: 'triangle', verb: 0.5 }); break;
       case 'wail':
@@ -344,15 +382,45 @@ class AudioEngine {
           this.tone(c.currentTime, crypt ? 4.5 : 3, { freq: f, gain: 0.05, verb: 1, bus: gain, attack: 0.02, type: crypt ? 'triangle' : 'sine' });
         }
       }, crypt ? 1700 : 1400);
-    } else if (name === 'boss' || name === 'boss2' || name === 'boss3') {
+    } else if (AREA[name]) {
+      // levels 6-8: a drone pad, a melody voice, and an optional ambient texture
+      const A = AREA[name];
+      const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = A.cutoff; lp.connect(gain);
+      const lfo = c.createOscillator(); lfo.frequency.value = A.lfo;
+      const lfoG = c.createGain(); lfoG.gain.value = A.cutoff * 0.4; lfo.connect(lfoG); lfoG.connect(lp.frequency); lfo.start();
+      m.nodes.push(lfo);
+      A.drone.forEach((f, i) => {
+        const o = c.createOscillator(); o.type = A.droneType; o.frequency.value = f; o.detune.value = (i - 1.5) * 6;
+        const g = c.createGain(); g.gain.value = A.droneGain; o.connect(g); g.connect(lp); o.start(); m.nodes.push(o);
+      });
+      if (A.noise) { // wind through leaves / embers crackling
+        const src = c.createBufferSource(); src.buffer = this.noiseBuf; src.loop = true;
+        const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = A.noise; f.Q.value = 0.7;
+        const g = c.createGain(); g.gain.value = 0.035; src.connect(f); f.connect(g); g.connect(gain); src.start(); m.nodes.push(src);
+      }
+      let step = 0;
+      m.timer = setInterval(() => {
+        const t = c.currentTime;
+        if (A.phrase) { // a slow repeating motif, varied by octave now and then
+          const f = A.phrase[step % A.phrase.length];
+          if (f) this.tone(t, A.noteLen, { freq: f * (step % (A.phrase.length * 2) >= A.phrase.length ? 2 : 1), gain: A.noteGain, verb: 1, bus: gain, attack: A.attack, type: A.noteType });
+          step++;
+        } else if (Math.random() < 0.5) {
+          const f = A.scale[Math.floor(Math.random() * A.scale.length)];
+          this.tone(t, A.noteLen, { freq: f, gain: A.noteGain, verb: 1, bus: gain, attack: A.attack, type: A.noteType });
+        }
+        if (A.bell && Math.random() < 0.12) this.tone(t, 5, { freq: A.bell, gain: 0.05, verb: 1, bus: gain, type: 'sine' });
+      }, A.every);
+    } else if (BOSS_EXTRA[name] || name === 'boss' || name === 'boss2' || name === 'boss3') {
       // driving 8th-note ostinato, drums, and a pad
       // boss2: B minor, choir-like arpeggio. boss3: E harmonic minor, fastest, double arpeggio.
-      const two = name === 'boss2' || name === 'boss3';
-      const three = name === 'boss3';
-      const bpm = three ? 156 : two ? 144 : 132, step = 60 / bpm / 2;
-      const bass = three ? [82.4, 82.4, 98, 82.4, 77.8, 82.4, 65.4, 61.7]
+      const X = BOSS_EXTRA[name];
+      const two = X ? X.arp : name === 'boss2' || name === 'boss3';
+      const three = X ? X.counter : name === 'boss3';
+      const bpm = X ? X.bpm : three ? 156 : two ? 144 : 132, step = 60 / bpm / 2;
+      const bass = X ? X.bass : three ? [82.4, 82.4, 98, 82.4, 77.8, 82.4, 65.4, 61.7]
         : two ? [61.7, 61.7, 73.4, 61.7, 69.3, 61.7, 55, 58.3] : [73.4, 73.4, 87.3, 73.4, 65.4, 65.4, 69.3, 73.4];
-      const chords = three
+      const chords = X ? X.chords : three
         ? [[329.6, 392, 493.9], [261.6, 329.6, 392], [246.9, 311.1, 370], [220, 261.6, 329.6]]
         : two
           ? [[246.9, 293.7, 370], [220, 277.2, 329.6], [196, 246.9, 293.7], [233.1, 277.2, 370]]
@@ -365,6 +433,10 @@ class AudioEngine {
           const b = bass[i % 8];
           this.tone(t, step * 0.9, { freq: b, type: 'sawtooth', gain: 0.22, bus: gain });
           this.tone(t, step * 0.9, { freq: b * 2, type: 'square', gain: 0.04, bus: gain });
+          if (X && X.toms && i % 3 === 0) { // the wood: a loping tom pattern over the beat
+            this.tone(t, 0.25, { freq: 160 - (i % 6) * 10, slide: 70, gain: 0.32, bus: gain });
+          }
+          if (X && X.bell && i % 16 === 8) this.tone(t, 2.5, { freq: X.bell, gain: 0.07, bus: gain, verb: 1, type: 'sine' });
           if (i % 4 === 0) { // kick
             this.tone(t, 0.3, { freq: 120, slide: 40, gain: 0.6, bus: gain });
           }

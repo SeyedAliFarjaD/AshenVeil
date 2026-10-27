@@ -18,7 +18,7 @@ export const BIND_ACTIONS = [
 ];
 
 const DEFAULTS = {
-  music: 0.8, sfx: 0.9, quality: 'auto', shake: true, flashes: true, damageNumbers: true,
+  music: 0.8, sfx: 0.9, quality: 'auto', difficulty: 'normal', scaleMode: 'fit', shake: true, flashes: true, damageNumbers: true,
   binds: {}, lastSlot: 1,
 };
 

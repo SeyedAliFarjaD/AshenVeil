@@ -49,7 +49,7 @@ export function buildLevel7() {
   return {
     id: 7, name: 'THE GLASS CITADEL',
     theme: {
-      sky: false, music: 'crypt', bossMusic: 'boss2', torchTint: 0xc8e0ff,
+      sky: false, music: 'glass', bossMusic: 'boss5', torchTint: 0xc8e0ff,
       groundTint: 0xc8d8f0, backTint: 0x7888a8, ambientTint: 'spirit',
     },
     startAbilities: { hasDouble: true, hasWallJump: true, hasDash: true, hasGrapple: true, hasGlide: true },

@@ -60,6 +60,7 @@ export function buildLevel2() {
     spawn: at(5, 15),
     bonfires: [
       { id: 'crypt-gate', ...at(9, 15) },
+      { id: 'ossuary', ...at(72, 31) },
       { id: 'catacombs', ...at(146, 9) },
     ],
     hollows: [at(30, 19), at(110, 31), at(124, 49), at(126, 9)],
