@@ -170,6 +170,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (Math.random() < 0.06) scene.fx.burst('heal', this.x, this.y - 10, 1);
     }
 
+    if (this.state !== 'normal') this.gliding = false;
+    // gliding banks gently into the drift; everything else stands upright
+    const bank = this.gliding ? ctl.x * 0.12 + Math.sin(scene.time.now / 260) * 0.03 : 0;
+    this.rotation += (bank - this.rotation) * Math.min(1, dt * 10);
+    if (!this.gliding && Math.abs(this.rotation) < 0.01) this.rotation = 0;
+
     switch (this.state) {
       case 'normal': this.updateNormal(dt, ctl, onGround); break;
       case 'attack': this.updateAttack(dt, ctl, onGround); break;
@@ -277,16 +283,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (!onGround && !this.inWater && ctl.state.jump && Math.abs(b.velocity.y) < 40) b.setGravityY(-320);
 
     // glide (Ashen Mantle): hold Jump while falling to drift down slowly
+    // (the mantle catches the air over a few frames instead of snapping the fall to a stop)
+    const wasGliding = this.gliding;
     this.gliding = false;
     if (this.hasGlide && !onGround && !this.sliding && ctl.state.jump && b.velocity.y > 60) {
-      b.setVelocityY(60);
+      b.setVelocityY(approach(b.velocity.y, 60, 3000 * dt));
       this.gliding = true;
-      if (Math.random() < 0.2) this.scene.fx.burst('spirit', this.x, this.y - 22, 1);
+      if (!wasGliding) {
+        audio.play('whoosh', 0.35);
+        this.scene.fx.burst('spirit', this.x - this.facing * 4, this.y - 30, 6);
+      }
+      if (Math.random() < 0.25) this.scene.fx.burst('spirit', this.x - this.facing * 7, this.y - 30, 1);
     }
 
     // animation
     if (this.sliding) {
       this.setAnim('wall');
+    } else if (this.gliding) {
+      this.setAnim('glide');
     } else if (!onGround) {
       this.setAnim(b.velocity.y < -50 ? 'jump' : b.velocity.y < 70 ? 'apex' : 'fall');
     } else if (Math.abs(b.velocity.x) > 15 && ctl.x) {
@@ -702,6 +716,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   die() {
     this.state = 'dead';
+    this.gliding = false; this.rotation = 0;
     this.cancelGrapple();
     this.body.setAllowGravity(true);
     this.setAlpha(1);

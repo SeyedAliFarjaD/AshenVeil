@@ -108,6 +108,16 @@ function heroAnims() {
     ...pose({ y: 0, lean: -4, head: 4, ff: [3, -3], bf: [-5, -5], ba: [-95 - i * 4, -70], fa: [40, 100], sw: 140, cape: -150 - i * 12 }),
     wave: i * 2,
   }));
+  // glide (Ashen Mantle): the back hand holds the mantle up like a sail that ripples
+  // overhead, the sword arm reaches forward for balance, legs trail loose beneath
+  const glide = range(4, (i) => {
+    const t = i / 4, s = Math.sin(TAU * t);
+    return {
+      ...pose({ y: -1 + s * 0.4, lean: 20 + s * 2, head: -12, ff: [2, -3 + s * 0.5], bf: [-6, -2 - s * 0.5],
+        ba: [-112 + s * 5, -122 + s * 6], fa: [62 + s * 3, 48 + s * 3], sw: 62 + s * 4, cape: -118 + s * 7 }),
+      capeScale: 1.45, wave: TAU * t,
+    };
+  });
   // air dash: stretched forward, sword trailing, cape streaming
   const dash = [0, 1].map((i) => ({
     ...pose({ y: -2, lean: 58, head: -20, ff: [6, -7], bf: [-8, -4], fa: [-70, -50], ba: [-90, -70], sw: -95, cape: -95 - i * 6 }),
@@ -142,6 +152,7 @@ function heroAnims() {
   return {
     dash: { poses: dash, fps: 12, repeat: -1 },
     wall: { poses: wall, fps: 8, repeat: -1 },
+    glide: { poses: glide, fps: 8, repeat: -1 },
     parry: { poses: parry, fps: 20, repeat: 0 },
     deflect: { poses: deflect, fps: 24, repeat: 0 },
     plunge: { poses: plunge, fps: 16, repeat: 0 },

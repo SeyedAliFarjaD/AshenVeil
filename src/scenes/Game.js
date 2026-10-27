@@ -58,7 +58,7 @@ export class GameScene extends Phaser.Scene {
     this.oneShot = false; // cheat (Shift+O): every connected blow kills
     const c = this.carry || {};
     this.deaths = c.deaths || 0;
-    this.startTime = this.time.now - (c.time || 0) * 1000;
+    this.playMs = (c.time || 0) * 1000; // play time; stops while paused
     // New Game+ scaling: enemies hit harder, endure more, and are worth more
     // base difficulty: enemies and hazards are 25% tougher and hit 25% harder, and
     // embers drop at 40% (-60%). New Game+ scales on top of this.
@@ -296,7 +296,7 @@ export class GameScene extends Phaser.Scene {
     save.write({
       level, embers: p.embers, hasDouble: p.hasDouble, hasWallJump: p.hasWallJump, hasDash: p.hasDash, hasGrapple: p.hasGrapple, hasGlide: p.hasGlide,
       stats: p.stats, shop: p.shop, charms: p.charms, equipped: p.equipped, notches: p.notches, foundSecrets: p.foundSecrets, ng: this.ng,
-      deaths: this.deaths, time: Math.floor((this.time.now - this.startTime) / 1000),
+      deaths: this.deaths, time: this.playSeconds,
       tutorial: this.tut ? [...this.tut.shown] : (this.carry && this.carry.tutorial) || [],
     });
   }
@@ -306,7 +306,7 @@ export class GameScene extends Phaser.Scene {
     return {
       embers: p.embers, hasDouble: p.hasDouble, hasWallJump: p.hasWallJump, hasDash: p.hasDash, hasGrapple: p.hasGrapple, hasGlide: p.hasGlide,
       stats: p.stats, shop: p.shop, charms: [...p.charms], equipped: [...p.equipped], notches: p.notches, foundSecrets: [...p.foundSecrets], ng: this.ng,
-      deaths: this.deaths, time: Math.floor((this.time.now - this.startTime) / 1000),
+      deaths: this.deaths, time: this.playSeconds,
     };
   }
 
@@ -1343,8 +1343,11 @@ export class GameScene extends Phaser.Scene {
     this.tweens.add({ targets: t, y: y - 26, alpha: 0, duration: 650, ease: 'Cubic.out', onComplete: () => t.destroy() });
   }
 
+  get playSeconds() { return Math.floor(this.playMs / 1000); }
+
   update(time, delta) {
     const dt = Math.min(delta / 1000, 1 / 30);
+    if (!this.paused) this.playMs += delta;
     this.updateParallax();
     this.updateAtmosphere();
     this.watchPerformance(delta);
