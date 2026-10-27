@@ -3,7 +3,7 @@ import { audio } from '../audio.js';
 const SERIF = 'Georgia, "Times New Roman", serif';
 
 const EPILOGUE = [
-  'The last pyre gutters out beneath the foundry.',
+  'The last spirit of the wood is laid to rest.',
   'For the first time in an age, the ash stops falling.',
   '',
   'The knight sets down the blade by a cold bonfire',
@@ -41,6 +41,7 @@ export class EndingScene extends Phaser.Scene {
 
   create(data) {
     this.data_ = data || {};
+    this.startedAt = this.time.now;
     this.cameras.main.setBackgroundColor('#05030a');
     this.cameras.main.fadeIn(1200);
     this.add.image(480, 520, 'glow').setTint(0xff8a30).setScale(4).setAlpha(0.18).setBlendMode('ADD');
@@ -71,7 +72,7 @@ export class EndingScene extends Phaser.Scene {
     this.epi.add(this.add.text(480, 440, `Your save now waits at New Game+ ${(s.ng || 0) + 1}: the dead endure more, and are worth more.`,
       { fontFamily: SERIF, fontSize: '15px', color: '#9a907e' }).setOrigin(0.5));
     this.tweens.add({ targets: this.epi, alpha: 1, duration: 2500 });
-    this.epiTimer = this.time.delayedCall(14000, () => this.advance());
+    this.epiTimer = this.time.delayedCall(18000, () => this.advance());
   }
 
   rollCredits() {
@@ -93,7 +94,8 @@ export class EndingScene extends Phaser.Scene {
   }
 
   advance() {
-    if (this.leaving) return;
+    // ignore keys still held from the boss fight: the epilogue would flash by unseen
+    if (this.leaving || this.time.now - this.startedAt < 4000) return;
     if (this.phase === 'epilogue') {
       if (this.epiTimer) this.epiTimer.remove();
       this.rollCredits();

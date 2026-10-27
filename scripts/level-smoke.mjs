@@ -21,7 +21,8 @@ const chrome = spawn(CHROME, [
   '--headless=new', `--remote-debugging-port=${PORT}`, `--user-data-dir=${profile}`,
   '--window-size=960,540', '--no-first-run', '--no-default-browser-check',
   '--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader',
-  '--disable-features=Translate,MediaRouter', '--no-proxy-server', 'about:blank',
+  '--disable-features=Translate,MediaRouter', '--no-proxy-server',
+  ...(process.platform === 'linux' ? ['--no-sandbox'] : []), 'about:blank',
 ])
 
 let ws, nextId = 1

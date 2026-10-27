@@ -56,7 +56,7 @@ class Foe extends Phaser.Physics.Arcade.Sprite {
 
   glintAt(dx, dy, tint = 0xffd27a, scale = 1.6) {
     const s = this.scene;
-    const g = s.add.image(this.x + dx * this.dir, this.y + dy, 'spark').setTint(tint).setBlendMode('ADD').setDepth(30).setScale(0.4);
+    const g = s.add.image(this.x + dx * (this.dir || 1), this.y + dy, 'spark').setTint(tint).setBlendMode('ADD').setDepth(30).setScale(0.4);
     s.tweens.add({ targets: g, scale, angle: 90, alpha: 0, duration: 400, onComplete: () => g.destroy() });
     audio.play('glint', 0.5);
   }
@@ -1120,6 +1120,9 @@ export class Necromancer extends Phaser.Physics.Arcade.Sprite {
     return 'hit';
   }
 }
+
+// Spider, Shade and Necromancer are not Foes but share its telegraph glint
+for (const C of [Spider, Shade, Necromancer]) if (!C.prototype.glintAt) C.prototype.glintAt = Foe.prototype.glintAt;
 
 export const NEW_ENEMY_TYPES = {
   archers: Archer, brutes: Brute, sappers: Sapper, ghouls: Ghoul, champions: Champion,

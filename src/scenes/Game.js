@@ -11,7 +11,7 @@ import { Hollow, Wisp, Sentinel, Acolyte } from '../entities/Enemies.js';
 import { Bellringer } from '../entities/Bellringer.js';
 import { Warden } from '../entities/Warden.js';
 import { Saint } from '../entities/Saint.js';
-import { NEW_ENEMY_TYPES, GROUNDED, Archer, Brute, Sapper, Ghoul, Duelist } from '../entities/NewEnemies.js';
+import { NEW_ENEMY_TYPES, GROUNDED } from '../entities/NewEnemies.js';
 import { NEW_BOSSES } from '../entities/NewBosses.js';
 import { Hazards } from '../hazards.js';
 import { settings, keyLabel } from '../settings.js';
@@ -445,11 +445,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   spawnFoe(kind, x, y) {
-    const CLS = { ghoul: Ghoul, archer: Archer, brute: Brute, sapper: Sapper, duelist: Duelist };
     let e;
     if (kind === 'hollow') { e = new Hollow(this, x, y); this.hollows.push(e); this.physics.add.collider(e, this.ground); }
     else if (kind === 'wisp') { e = new Wisp(this, x, y); this.wisps.push(e); this.physics.add.collider(e, this.ground); }
-    else { e = new CLS[kind](this, x, y); this.extras.push(e); this.physics.add.collider(e, this.ground); }
+    else {
+      const Cls = NEW_ENEMY_TYPES[kind + 's'];
+      e = new Cls(this, x, y); this.extras.push(e);
+      if (GROUNDED.has(Cls)) this.physics.add.collider(e, this.ground);
+    }
     e.swarm = true;
     this.applyTier(e, Math.floor(Math.random() * 1000));
     this.shadows.push({ o: e, img: this.add.image(e.x, e.y, 'shadow').setDepth(e.depth - 1) });
