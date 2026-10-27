@@ -1,6 +1,6 @@
 # Ashen Vigil
 
-A 2D souls-like metroidvania built with Phaser 3. It has six levels, each ending in a boss fight:
+A 2D souls-like metroidvania built with Phaser 3. It has eight levels, each ending in a boss fight:
 
 1. **The Ashen Ramparts:** *Ser Caedric, the Ashen Warden*.
 2. **The Drowned Crypt:** *Morwen, the Drowned Saint*.
@@ -8,6 +8,8 @@ A 2D souls-like metroidvania built with Phaser 3. It has six levels, each ending
 4. **The Frozen Belfry:** *Sir Hallowyn, the Rimebound*.
 5. **The Sunken Foundry:** *Gorrak, the Forge Golem*.
 6. **The Hollow Wood:** *Oakhart, the Stag Spirit*.
+7. **The Glass Citadel:** *Seraphine, the Duelist Queen*.
+8. **The Ashen Throne:** *Vaelor, the Ashen King* (three stages).
 
 The combat blends **Hollow Knight** (pogo plunges, focus-powered soul bolts, constant movement)
 with **Nine Sols** (deflect timing, a focus gauge, and the Force super). Rest at bonfires to

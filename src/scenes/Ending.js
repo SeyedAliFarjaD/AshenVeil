@@ -3,7 +3,7 @@ import { audio } from '../audio.js';
 const SERIF = 'Georgia, "Times New Roman", serif';
 
 const EPILOGUE = [
-  'The last spirit of the wood is laid to rest.',
+  'The Ashen King falls, and his crown goes cold.',
   'For the first time in an age, the ash stops falling.',
   '',
   'The knight sets down the blade by a cold bonfire',
