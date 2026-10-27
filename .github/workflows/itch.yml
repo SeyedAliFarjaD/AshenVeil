@@ -1,0 +1,34 @@
+name: Publish to itch.io
+
+# Needs, in Settings -> Secrets and variables -> Actions:
+#   secret   BUTLER_API_KEY  (itch.io -> Settings -> API keys)
+#   variable ITCH_GAME       (e.g. yourname/ashen-vigil, the game page must exist)
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: cd dist && zip -qr ../ashen-vigil-web.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ashen-vigil-web
+          path: ashen-vigil-web.zip
+      - name: Push to itch.io with butler
+        if: ${{ vars.ITCH_GAME != '' }}
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          curl -sSL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d butler && chmod +x butler/butler
+          ./butler/butler push dist "${{ vars.ITCH_GAME }}:html5" --userversion "${GITHUB_REF_NAME}-${GITHUB_SHA::7}"
