@@ -53,6 +53,13 @@ Then open http://localhost:8080. You need Python 3, which serves the files with 
 | Bonfire menu: switch tab (ASCEND / SHOP) | A / D or Left / Right | - |
 | Pause / mute | Esc / M | Start |
 
+**Phones and tablets:** on-screen controls appear automatically. They show up on a touch screen, or when you add `?touch` to the URL.
+- **Left side:** a floating stick moves the hero. Push it up or down for up-slashes and plunges.
+- **Right side:** ATK, JUMP, ROLL, PARRY, HEAL, BOLT, FORCE, HOOK and USE.
+- **Top row:** II pauses (and goes back in menus) and `[ ]` toggles fullscreen. OK confirms, and only appears in menus.
+- **Menus:** you can also tap menu rows directly.
+- **Orientation:** play in landscape.
+
 ## What's in the game
 
 ### Progression (all levels)

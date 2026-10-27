@@ -54,6 +54,7 @@ export class UIScene extends Phaser.Scene {
 
   create() {
     this.leavingLevel = false;
+    this.completeShown = false;
     this.hintBox = null;
     const g = this.game_ = this.scene.get('Game');
     this.W = 960; this.H = 540;
@@ -584,6 +585,7 @@ export class UIScene extends Phaser.Scene {
   }
 
   complete(s) {
+    this.completeShown = true;
     if (!s.next) { // the final boss: epilogue + credits, then the title (the save holds New Game+)
       this.time.delayedCall(800, () => { this.scene.stop('Game'); this.scene.start('Ending', s); });
       return;
@@ -618,6 +620,7 @@ export class UIScene extends Phaser.Scene {
         }
       };
       this.input.keyboard.once('keydown-ENTER', go);
+      this.input.once('pointerdown', go);
       if (this.input.gamepad) this.input.gamepad.once('down', go);
       if (!s.next) this.input.keyboard.once('keydown-N', () => { this.scene.stop('Game'); this.scene.start('Title'); });
     });

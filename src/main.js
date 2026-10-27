@@ -3,6 +3,7 @@ import { TitleScene } from './scenes/Title.js';
 import { GameScene } from './scenes/Game.js';
 import { UIScene } from './scenes/UI.js';
 import { EndingScene } from './scenes/Ending.js';
+import { setupTouch } from './touch.js';
 import { applyScreenScale } from './menu.js';
 
 // Title vignette shared by the title screen
@@ -34,5 +35,6 @@ const game = new Phaser.Game({
   callbacks: { postBoot: (g) => makeVignette(g) },
 });
 window.__game = game;
+setupTouch();
 game.events.once('ready', () => applyScreenScale(game));
 window.addEventListener('resize', () => applyScreenScale(game));

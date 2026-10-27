@@ -8,7 +8,7 @@ export class Controls {
     this.scene = scene;
     this.rebind();
     this.mouseAttack = false;
-    scene.input.on('pointerdown', (p) => { if (p.leftButtonDown()) this.mouseAttack = true; });
+    scene.input.on('pointerdown', (p) => { if (p.leftButtonDown() && !p.wasTouch) this.mouseAttack = true; });
     this.prev = {};
     this.state = {};
     this.pressed = {};
