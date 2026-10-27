@@ -46,7 +46,7 @@ export function buildLevel6() {
   return {
     id: 6, name: 'THE HOLLOW WOOD',
     theme: {
-      sky: false, music: 'crypt', bossMusic: 'boss2', torchTint: 0x9fe8a0,
+      sky: false, music: 'wood', bossMusic: 'boss4', torchTint: 0x9fe8a0,
       groundTint: 0xa8c098, backTint: 0x6e8064, ambientTint: 'spirit',
     },
     startAbilities: { hasDouble: true, hasWallJump: true, hasDash: true, hasGrapple: true, hasGlide: true },

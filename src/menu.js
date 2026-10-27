@@ -166,6 +166,10 @@ export class Menu {
 const pct = (v) => `${Math.round(v * 100)}%`;
 const step = (k, d) => () => { settings[k] = Math.round(Math.min(1, Math.max(0, settings[k] + d)) * 10) / 10; settings.save(); audio.applySettings(); };
 const flip = (k) => () => { settings[k] = !settings[k]; settings.save(); };
+const cycle = (k, list, d) => () => { settings[k] = list[(list.indexOf(settings[k]) + d + list.length) % list.length]; settings.save(); };
+const DIFFS = ['story', 'normal', 'hard'];
+const DIFF_NAMES = { story: 'Story', normal: 'Normal', hard: 'Hard' };
+const SCALES = ['fit', 'pixel'];
 const QUALITY = ['auto', 'high', 'low'];
 const cycleQuality = (d, onQuality) => () => {
   settings.quality = QUALITY[(QUALITY.indexOf(settings.quality) + d + 3) % 3];
@@ -179,6 +183,7 @@ export function settingsPage(opts = {}) {
   return {
     title: 'SETTINGS',
     rows: [
+      { label: 'Difficulty', value: () => `${DIFF_NAMES[settings.difficulty]}${opts.inGame ? '  (next area)' : ''}`, left: cycle('difficulty', DIFFS, -1), right: cycle('difficulty', DIFFS, 1) },
       { label: 'Music volume', value: () => pct(settings.music), left: step('music', -0.1), right: step('music', 0.1) },
       { label: 'Sound effects', value: () => pct(settings.sfx), left: step('sfx', -0.1), right: step('sfx', 0.1) },
       { label: 'Graphics quality', value: () => (settings.quality === 'auto' ? `Auto (${settings.effectiveQuality})` : settings.quality === 'high' ? 'High' : 'Low'),
@@ -186,6 +191,8 @@ export function settingsPage(opts = {}) {
       { label: 'Screen shake', value: () => (settings.shake ? 'On' : 'Off'), left: flip('shake'), right: flip('shake') },
       { label: 'Bright flashes', value: () => (settings.flashes ? 'On' : 'Reduced'), left: flip('flashes'), right: flip('flashes') },
       { label: 'Damage numbers', value: () => (settings.damageNumbers ? 'On' : 'Off'), left: flip('damageNumbers'), right: flip('damageNumbers') },
+      { label: 'Screen scale', value: () => (settings.scaleMode === 'pixel' ? 'Pixel-perfect' : 'Fit window'),
+        left: () => { cycle('scaleMode', SCALES, -1)(); applyScreenScale(opts.scene && opts.scene.game); }, right: () => { cycle('scaleMode', SCALES, 1)(); applyScreenScale(opts.scene && opts.scene.game); } },
       { label: 'Fullscreen', value: () => (fs() ? 'On' : 'Off'), act: () => { if (opts.scene) opts.scene.scale.toggleFullscreen(); setTimeout(() => opts.menu && opts.menu.updateValues(), 250); } },
       { label: 'Controls...', act: (m) => m.push(controlsPage(opts)) },
       { label: 'Back', act: (m) => m.pop() },
@@ -219,3 +226,19 @@ export const MOVES_TEXT = [
   '',
   'Gamepad: A jump  X attack  B roll  Y heal  LB interact  LT parry  RT grapple',
 ].join('\n');
+
+// Screen scale: 'fit' stretches to the window; 'pixel' uses the largest whole-number
+// zoom that fits, so every pixel of the art stays square and sharp.
+export function applyScreenScale(game) {
+  if (!game) return;
+  const sc = game.scale;
+  if (settings.scaleMode === 'pixel') {
+    const k = Math.max(1, Math.floor(Math.min(window.innerWidth / 960, window.innerHeight / 540)));
+    sc.scaleMode = Phaser.Scale.NONE;
+    sc.setZoom(k);
+  } else {
+    sc.scaleMode = Phaser.Scale.FIT;
+    sc.setZoom(1);
+  }
+  sc.refresh();
+}

@@ -16,6 +16,8 @@ with **Nine Sols** (deflect timing, a focus gauge, and the Force super). Rest at
 spend embers on stats, Dark Souls style. After the last level, New Game+ loops the whole game
 with tougher, richer enemies.
 
+Settings include difficulty (Story / Normal / Hard), key rebinding, volume, screen scale (fit or pixel-perfect), fullscreen, and accessibility toggles for screen shake, bright flashes and damage numbers.
+
 Progress (current level, embers, stats, abilities) saves automatically. The title screen offers Continue, or N for a new game.
 
 Every sprite, tile, effect, sound and piece of music is generated in code, so there are no asset files to manage.

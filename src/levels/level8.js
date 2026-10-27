@@ -46,7 +46,7 @@ export function buildLevel8() {
   return {
     id: 8, name: 'THE ASHEN THRONE',
     theme: {
-      sky: false, music: 'cathedral', bossMusic: 'boss3', torchTint: 0xff7040,
+      sky: false, music: 'throne', bossMusic: 'boss6', torchTint: 0xff7040,
       groundTint: 0xc8a898, backTint: 0x806058, ambientTint: 'fire',
     },
     startAbilities: { hasDouble: true, hasWallJump: true, hasDash: true, hasGrapple: true, hasGlide: true },

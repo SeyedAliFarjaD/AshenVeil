@@ -50,6 +50,7 @@ export function buildLevel1() {
     spawn: at(5, 29),
     bonfires: [
       { id: 'courtyard', ...at(9, 29) },
+      { id: 'undercroft', ...at(63, 44) },
       { id: 'ramparts', ...at(126, 19) },
     ],
     hollows: [at(38, 27), at(57, 27), at(70, 27), at(47, 44), at(80, 44), at(92, 19), at(113, 19)],
