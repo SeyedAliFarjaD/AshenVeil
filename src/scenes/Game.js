@@ -851,6 +851,7 @@ export class GameScene extends Phaser.Scene {
         // "cutting shadow": a white after-image shoved along the hit, plus ring and speed streaks
         this.fx.afterImage(t, 0xffffff);
         this.fx.impact(cx, cy, dir, big);
+        this.hitSquash(t, big);
         // the white cut line: angle follows the swing, mirrored by facing
         const ang = (atk.cut || 0) * dir;
         this.fx.cut(cx, cy, ang, atk.cutLen || (big ? 92 : 64), { thick: big ? 1.4 : 1 });
@@ -873,6 +874,18 @@ export class GameScene extends Phaser.Scene {
       this.fx.shake(atk.heavy ? 0.006 : 0.003, atk.heavy ? 140 : 80);
     }
     this.hitSecrets(rect, hitSet);
+  }
+
+  // a quick squeeze-and-recover on the struck foe so every blow lands with weight.
+  // Only the width shrinks: the physics body scales with the sprite, and a taller or
+  // wider body could dip into the floor or a wall for a frame.
+  hitSquash(t, big) {
+    if (!t.active || !t.visible) return;
+    const base = t.hitBase || (t.hitBase = t.scaleX);
+    const k = (big ? 0.12 : 0.07) * (this.bosses.includes(t) ? 0.5 : 1);
+    this.tweens.killTweensOf(t, 'scaleX');
+    t.scaleX = base * (1 - k);
+    this.tweens.add({ targets: t, scaleX: base, duration: 140, ease: 'Back.Out' });
   }
 
   // ------------------------------------------------------------ secrets (false walls)
@@ -1148,6 +1161,12 @@ export class GameScene extends Phaser.Scene {
     this.acolytes.forEach((h) => h.reset());
     this.bellringers.forEach((h) => h.reset());
     this.wisps.forEach((w) => w.reset());
+    this.clearHitSquash();
+  }
+
+  // resets kill tweens: put back any foe caught mid-squash at its rest width
+  clearHitSquash() {
+    for (const e of [...this.allFoes(), ...this.bosses]) if (e.hitBase !== undefined) e.scaleX = e.hitBase;
   }
 
   // ------------------------------------------------------------ death & respawn
@@ -1186,6 +1205,7 @@ export class GameScene extends Phaser.Scene {
     this.resetEnemies();
     if (!this.bossDefeated) {
       this.bosses.forEach((b) => b.reset());
+      this.clearHitSquash();
       this.floodArena(false);
       this.bossStarted = false;
       this.fogWall.body.enable = false;

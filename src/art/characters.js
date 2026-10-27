@@ -1,6 +1,6 @@
 // All character animations, authored as poses (angles in degrees).
 import { PixelCanvas, registerSheet } from './pixel.js';
-import { STYLES, pose, renderStrip } from './humanoid.js';
+import { STYLES, pose, lerpPose, renderStrip } from './humanoid.js';
 
 const TAU = Math.PI * 2;
 const range = (n, f) => Array.from({ length: n }, (_, i) => f(i));
@@ -35,6 +35,8 @@ function heroAnims() {
     ...pose({ y: 0, lean: 4, ff: [3, -2], bf: [-5, -4], ba: [-110, -150], fa: [70, 120], sw: 140, cape: -140 - i * 10 }),
     wave: i * 2,
   }));
+  // apex: the in-between of the rise and the fall, so the arms don't snap overhead
+  const apex = [{ ...lerpPose(jump[1], fall[0], 0.5), wave: 1 }];
   const land = [
     pose({ y: 3.5, lean: 18, ff: [5, 0], bf: [-5, 0], ba: [-30, 10], fa: [40, 90], sw: 110, cape: -40 }),
     pose({ y: 1.5, lean: 10, ff: [4, 0], bf: [-4, 0], ba: [-20, 15], fa: [30, 85], sw: 118, cape: -28 }),
@@ -147,6 +149,7 @@ function heroAnims() {
     run: { poses: run, fps: 15, repeat: -1 },
     jump: { poses: jump, fps: 8, repeat: 0 },
     fall: { poses: fall, fps: 8, repeat: -1 },
+    apex: { poses: apex, fps: 1, repeat: 0 },
     land: { poses: land, fps: 16, repeat: 0 },
     attack1: { poses: attack1, fps: 20, repeat: 0 },
     attack2: { poses: attack2, fps: 20, repeat: 0 },

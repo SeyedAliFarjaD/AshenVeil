@@ -206,6 +206,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.wallLock -= dt;
       b.setVelocityX(approach(b.velocity.x, this.facing * run, 400 * dt));
     } else {
+      // turning hard on the ground kicks up a little dust
+      if (onGround && ctl.x && Math.sign(b.velocity.x) === -ctl.x && Math.abs(b.velocity.x) > 70 && !this.skidded) {
+        this.skidded = true;
+        this.scene.fx.dustPuff(this.x + Math.sign(b.velocity.x) * 4, this.y, 3);
+      } else if (!ctl.x || Math.sign(b.velocity.x) === ctl.x) this.skidded = false;
       b.setVelocityX(approach(b.velocity.x, ctl.x * run, (onGround ? 1200 * (this.floorGrip ?? 1) : 750) * dt));
       if (ctl.x) { this.facing = ctl.x; this.setFlipX(this.facing < 0); }
     }
@@ -268,6 +273,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.jumpCut = true;
     }
 
+    // a touch of hang time at the top of a held jump (adds well under a pixel of height)
+    if (!onGround && !this.inWater && ctl.state.jump && Math.abs(b.velocity.y) < 40) b.setGravityY(-320);
+
     // glide (Ashen Mantle): hold Jump while falling to drift down slowly
     this.gliding = false;
     if (this.hasGlide && !onGround && !this.sliding && ctl.state.jump && b.velocity.y > 60) {
@@ -280,9 +288,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.sliding) {
       this.setAnim('wall');
     } else if (!onGround) {
-      this.setAnim(b.velocity.y < 0 ? 'jump' : 'fall');
+      this.setAnim(b.velocity.y < -50 ? 'jump' : b.velocity.y < 70 ? 'apex' : 'fall');
     } else if (Math.abs(b.velocity.x) > 15 && ctl.x) {
       this.setAnim('run');
+      // the stride follows the real speed: no foot sliding in water or while speeding up
+      this.anims.timeScale = Phaser.Math.Clamp(Math.abs(b.velocity.x) / RUN, 0.55, 1.3);
     } else if (!((this.anim === 'land' || this.anim === 'deflect' || (this.anim === 'attack1' && this.castCd > 0)) && this.anims.isPlaying)) {
       this.setAnim('idle');
     }
