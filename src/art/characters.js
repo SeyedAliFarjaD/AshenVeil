@@ -448,6 +448,15 @@ export const CHAR_SIZES = { hero: 64 * HERO_RES, hollow: 64, warden: 128, sentin
   archer: 64, brute: 80, sapper: 64, ghoul: 64, shade: 96, duelist: 64, necromancer: 80, champion: 80,
   forgegolem: 128, stagspirit: 128, queen: 128, ashenking: 128 };
 
+// Hero animations cut from the source videos (tools/video_sprites.py -> assets/hero).
+// Frames are 2x wide so the long blade fits; anything not listed stays procedural.
+export const HERO_VIDEO = { idle: 8, run: 8, jump: 2, apex: 1, fall: 2, land: 2, attack1: 6, attack2: 6, attack3: 8 };
+export const HERO_W = 2;
+
+export function loadHeroSprites(scene) {
+  for (const a of Object.keys(HERO_VIDEO)) scene.load.image(`herovid_${a}`, `assets/hero/${a}.png`);
+}
+
 export function buildCharacters(scene) {
   const sets = {
     hero: heroAnims(), hollow: hollowAnims(), warden: wardenAnims(), sentinel: sentinelAnims(), saint: saintAnims(),
@@ -461,11 +470,20 @@ export function buildCharacters(scene) {
     const size = CHAR_SIZES[name];
     for (const [anim, def] of Object.entries(anims)) {
       const key = `${name}_${anim}`;
-      const canvas = renderStrip(PixelCanvas, def.poses, STYLES[name], size, size);
-      registerSheet(scene, key, canvas, size, size, def.poses.length);
+      const w = name === 'hero' ? size * HERO_W : size;
+      const vid = name === 'hero' && scene.textures.exists(`herovid_${anim}`) ? HERO_VIDEO[anim] : 0;
+      let count = def.poses.length;
+      if (vid) {
+        if (scene.textures.exists(key)) scene.textures.remove(key);
+        const tex = scene.textures.addImage(key, scene.textures.get(`herovid_${anim}`).getSourceImage());
+        for (let i = 0; i < vid; i++) tex.add(i, 0, i * w, 0, w, size);
+        count = vid;
+      } else {
+        registerSheet(scene, key, renderStrip(PixelCanvas, def.poses, STYLES[name], w, size), w, size, count);
+      }
       scene.anims.create({
         key,
-        frames: def.poses.map((_, i) => ({ key, frame: i })),
+        frames: Array.from({ length: count }, (_, i) => ({ key, frame: i })),
         frameRate: def.fps,
         repeat: def.repeat,
       });

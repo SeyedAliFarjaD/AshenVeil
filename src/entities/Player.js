@@ -1,5 +1,5 @@
 import { audio } from '../audio.js';
-import { HERO_RES } from '../art/characters.js';
+import { HERO_RES, HERO_W } from '../art/characters.js';
 import { BASE_NOTCHES } from '../charms.js';
 
 const BASE_SCALE = 1 / HERO_RES;
@@ -41,7 +41,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // (the renderer puts the feet 4 texels above the frame bottom)
     const fs = 64 * HERO_RES;
     this.setOrigin(0.5, (fs - 4) / fs).setScale(BASE_SCALE);
-    this.body.setSize(10 * HERO_RES, 26 * HERO_RES).setOffset(fs / 2 - 5 * HERO_RES, fs - 4 - 26 * HERO_RES);
+    this.body.setSize(10 * HERO_RES, 26 * HERO_RES).setOffset(fs * HERO_W / 2 - 5 * HERO_RES, fs - 4 - 26 * HERO_RES);
     this.body.setMaxVelocity(400, 520);
     this.setDepth(20);
 

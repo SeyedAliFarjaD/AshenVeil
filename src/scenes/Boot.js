@@ -1,9 +1,11 @@
-import { buildCharacters } from '../art/characters.js';
+import { buildCharacters, loadHeroSprites } from '../art/characters.js';
 import { buildWorld } from '../art/world.js';
 
 // Generates every texture and animation procedurally, then shows the title.
 export class BootScene extends Phaser.Scene {
   constructor() { super('Boot'); }
+
+  preload() { loadHeroSprites(this); }
 
   create() {
     const el = document.getElementById('loading');
