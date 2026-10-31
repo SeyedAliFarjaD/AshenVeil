@@ -1,0 +1,42 @@
+{
+ "fw": 288,
+ "fh": 144,
+ "anims": {
+  "idle": {
+   "frames": 8,
+   "fps": 7
+  },
+  "run": {
+   "frames": 8,
+   "fps": 14
+  },
+  "jump": {
+   "frames": 2,
+   "fps": 8
+  },
+  "apex": {
+   "frames": 1,
+   "fps": 1
+  },
+  "fall": {
+   "frames": 2,
+   "fps": 8
+  },
+  "land": {
+   "frames": 2,
+   "fps": 14
+  },
+  "attack1": {
+   "frames": 6,
+   "fps": 20
+  },
+  "attack2": {
+   "frames": 6,
+   "fps": 20
+  },
+  "attack3": {
+   "frames": 8,
+   "fps": 16
+  }
+ }
+}
